@@ -361,16 +361,16 @@ const SECS=[
      files:[{n:"ASTRA_EMR연동_협의자료.docx",d:"단계별 연동 표준"},
             {n:"외래_방문일자_AI.xlsx",d:"다부서 확장 기반(Living Hospital)"}]}
  },
- { id:"budget", n:"07", ac:"var(--c1)", kicker:"예산 가견적",
-   title:"도입 예산 — 의료장비·인프라 + 개발비 (가견적)",
-   lead:`이전 시점 도입을 전제로 한 <span class="em">개략 견적</span>이다. 수량은 안과 5실방 기준 가정이며, 실견적은 병원 환경·연동 범위에 따라 조정된다.`,
-   body:`<p>ASTRA 모델은 <b>트리 기반(XGBoost·LightGBM)</b>이라 고가 GPU 서버가 불필요합니다 — 일반 온프레미스 서버로 충분합니다(향후 딥러닝 확장 시 GPU 별도 증설). 아래는 장비·인프라와 개발비를 분리한 1차 가견적으로, 단가는 2025–2026 국내 시세와 <b>SW 노임단가</b>(소프트웨어진흥법 제46조) 기준입니다.</p>`,
+ { id:"budget", n:"07", ac:"var(--c1)", kicker:"구성 요건",
+   title:"도입에 필요한 환경·물품·소프트웨어·개발 항목",
+   lead:`이전 시점 도입에 <span class="em">필요한 항목</span>을 환경·물품·소프트웨어·개발로 정리한다. 수량은 안과 5실방 기준 가정이며, 단가·총액은 별도 견적으로 산정한다.`,
+   body:`<p>ASTRA 모델은 <b>트리 기반(XGBoost·LightGBM)</b>이라 고가 GPU 서버가 불필요합니다 — 일반 온프레미스 서버로 충분합니다(향후 딥러닝 확장 시 GPU 별도). 아래는 도입에 필요한 항목을 <b>환경·물품·소프트웨어·개발</b>로 구분한 명세이며, 단가·총액은 포함하지 않습니다.</p>`,
    budget:true,
-   hl:[{v:"≈0.85<small>억</small>",l:"장비·인프라 (가정 수량)"},{v:"≈1.9<small>억</small>",l:"개발비 (6개월 파일럿)"},{v:"≈2.75<small>억</small>",l:"총 가견적 (추정)"}],
-   ev:{rationale:`<p>견적 철학은 <b>과투자 회피</b>입니다. 트리 모델은 CPU로 충분하므로 H100급 서버(수천만~수억)는 배제했고, 키오스크는 <b>도착 캡처·체크인</b> 기능 중심의 의료형으로 한정했습니다. 개발비는 노임단가 × 투입 개월(M/M)로 산정해 발주 적정 대가 근거를 확보합니다.</p>
-     <ul class="clean"><li>키오스크 의료형 약 ₩5M/대 (일반 결제형 250–350만원보다 연동 포함 상향)</li><li>AI엔지니어·아키텍트 월 ~1,100만원 / 응용개발 ~775만원 / 기획 ~1,185만원</li><li>모든 항목은 <b>추정</b> — 정식 RFP·벤더 견적으로 확정</li></ul>`,
+   hl:[{v:"4",l:"구성 영역 (환경·물품·SW·개발)"},{v:"CPU",l:"트리모델 — GPU 서버 불요"},{v:"오픈소스",l:"ML 스택 (XGBoost·LightGBM)"}],
+   ev:{rationale:`<p>구성 철학은 <b>과투자 회피와 오픈소스 우선</b>입니다. 트리 모델은 CPU로 충분하므로 H100급 GPU 서버(수천만~수억)는 배제하고, ML 스택은 오픈소스, 키오스크는 <b>도착 캡처·체크인</b> 기능으로 한정합니다. 단가·총액은 본 명세 범위 밖으로, RFP·벤더 견적으로 별도 산정합니다.</p>
+     <ul class="clean"><li>환경: CPU 서버·네트워크·EMR/PACS 연동 게이트웨이</li><li>소프트웨어: 예측 런타임·API·DB·대시보드·연동 미들웨어·보안</li><li>개발: U1–U6 모듈 + EMR/PACS 연동 + 재현 가능 파이프라인</li></ul>`,
      files:[{n:"검사실_정보_기본AI.csv",d:"실방·장비 구성 — 수량 가정 근거"},
-            {n:"ASTRA_EMR연동_협의자료.docx",d:"연동 범위 — 개발 공수 산정"}]}
+            {n:"ASTRA_EMR연동_협의자료.docx",d:"연동 범위 — 개발 항목 산정"}]}
  }
 ];
 
@@ -491,25 +491,36 @@ function flowgraphHTML(){
   </div>`;
 }
 function budgetHTML(){
-  const eq=[["의료형 키오스크 (체크인·도착 캡처)","5대","₩5.0M","₩25.0M"],["안내·운영 PC","8대","₩1.3M","₩10.4M"],
-    ["대기현황 사이니지 (32인치)","5대","₩2.0M","₩10.0M"],["온프레미스 AI·앱 서버 (CPU)","1식","₩18.0M","₩18.0M"],
-    ["네트워크·배선·설치","1식","₩8.0M","₩8.0M"],["EMR/PACS 연동 게이트웨이","1식","₩6.0M","₩6.0M"]];
-  const dev=[["기획 · PM","3.0 M/M","₩11.85M","₩35.6M"],["AI · ML 엔지니어","6.0 M/M","₩11.0M","₩66.0M"],
-    ["백엔드 · EMR/PACS 연동","6.0 M/M","₩7.75M","₩46.5M"],["프론트엔드 · 대시보드/키오스크 UI","3.0 M/M","₩6.9M","₩20.7M"],
-    ["정보보안 (의료정보)","2.0 M/M","₩10.41M","₩20.8M"]];
-  const row=r=>`<tr class="sub"><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`;
+  const env=[["온프레미스 AI·앱 서버","CPU 기반 · 트리모델이라 GPU 불요 · 1식"],
+    ["네트워크·배선·설치","실방 단말·사이니지 연결 · 1식"],
+    ["EMR/PACS 연동 게이트웨이","HL7 FHIR 연동 접점 · 1식"]];
+  const hw=[["의료형 키오스크","체크인·실제 도착 캡처 · 5대(가정)"],
+    ["안내·운영 PC","실방·간호스테이션·중앙 · 8대(가정)"],
+    ["대기현황 사이니지","대기·동선 안내 32인치 · 5대(가정)"]];
+  const sw=[["예측 모델 런타임","Python · XGBoost·LightGBM·scikit-learn (오픈소스)"],
+    ["예측 서비스 API","REST · 실시간 대기/도착 예측 제공"],
+    ["데이터베이스","환자 동선·타임스탬프·오더 시퀀스 저장"],
+    ["대시보드·키오스크 UI","웹(Chart.js) · 실방 상태·체크인 화면"],
+    ["EMR/PACS 연동 미들웨어","HL7 FHIR · PDIM/PACS 규칙 처리"],
+    ["실시간 모니터링·로깅","큐 인덱스·병목 경보 (선택: 스트림 큐)"],
+    ["정보보안 SW","의료정보 접근통제·감사·암호화"]];
+  const dev=[["수요 예측 엔진 (U1)","재진 반복·시간대 집중 학습 · 시나리오 산출"],
+    ["디지털 트윈/시나리오 엔진 (U2)","수요→대기/슬롯 전이함수 · 4대 근거 시뮬레이션"],
+    ["도착 행동 예측 (U6)","예약 대비 실제 도착 예측 · 오버부킹·순번"],
+    ["예약 슬롯 최적화 (U3)","오전 피크 분산 · 슬롯 수용 기반 배정"],
+    ["동선 오케스트레이션 (U4)","오더 시퀀스 배치 · 산동 사전분기 · 협조도 가중"],
+    ["실시간 모니터링·경보 (U5)","PDIM=0 실측 되먹임 · 전이함수 보정"],
+    ["EMR/PACS 연동 개발","타임스탬프·worklist(PACS) 규칙 구현"],
+    ["데이터 파이프라인·재학습","재현 가능(random_state 고정)·정기 재학습"]];
+  const row=r=>`<tr class="sub"><td>${r[0]}</td><td>${r[1]}</td></tr>`;
+  const grp=t=>`<tr class="grp"><td colspan="2">${t}</td></tr>`;
   return `<div class="budget"><table class="budtab">
-    <tr class="grp"><td colspan="4">A. 장비 · 인프라 (가정: 안과 5실방 + 중앙 접수)</td></tr>
-    <tr><th>항목</th><th>수량</th><th>단가</th><th>소계</th></tr>${eq.map(row).join("")}
-    <tr class="sub"><td>예비비 (10%)</td><td class="num">—</td><td class="num">—</td><td class="num">₩7.7M</td></tr>
-    <tr class="tot"><td>장비 합계</td><td></td><td></td><td class="num">≈ ₩85.1M</td></tr>
-    <tr class="grp"><td colspan="4">B. 개발비 (6개월 파일럿 · SW 노임단가 월 기준)</td></tr>
-    <tr><th>역할</th><th>투입</th><th>월단가</th><th>소계</th></tr>${dev.map(row).join("")}
-    <tr class="tot"><td>개발 합계</td><td></td><td></td><td class="num">≈ ₩189.6M</td></tr>
-    <tr class="grp"><td colspan="4">총계</td></tr>
-    <tr class="tot"><td>총 도입 가견적 (A + B)</td><td></td><td></td><td class="num">≈ ₩274.7M</td></tr>
+    ${grp("A. 환경 · 인프라")}<tr><th>항목</th><th>사양 · 범위</th></tr>${env.map(row).join("")}
+    ${grp("B. 물품 (하드웨어) · 수량은 5실방 기준 가정")}<tr><th>항목</th><th>사양 · 수량</th></tr>${hw.map(row).join("")}
+    ${grp("C. 소프트웨어")}<tr><th>항목</th><th>구성</th></tr>${sw.map(row).join("")}
+    ${grp("D. 개발 항목")}<tr><th>항목</th><th>범위</th></tr>${dev.map(row).join("")}
   </table>
-  <div class="budnote">단가 출처: 키오스크 국내 시세(스탠드형 250–350만원, 의료 종합형 연동 포함 상향) · SW 노임단가 2026(소프트웨어진흥법 제46조 — 응용개발 ~775만 / AI·아키텍트 ~1,100만 / 기획 ~1,185만 원·월). 수량은 5실방 가정이며 실견적은 RFP·벤더 견적으로 확정. ASTRA는 트리 기반 모델이라 고가 GPU 서버 불요(향후 딥러닝 확장 시 별도 증설).</div></div>`;
+  <div class="budnote">본 명세는 도입에 <b>필요한 항목</b>만 정리한 것으로 단가·총액을 포함하지 않습니다 — 단가·수량 확정과 견적은 RFP·벤더 견적으로 별도 산정합니다. ASTRA는 트리 기반이라 GPU 서버 불요(향후 딥러닝 확장 시 별도), ML 스택은 오픈소스 중심입니다.</div></div>`;
 }
 function secHTML(s){
   const hl = s.hl&&s.hl.length ? `<div class="hl">${s.hl.map(c=>`<div class="cell"><div class="v">${c.v}</div><div class="l">${c.l}</div></div>`).join("")}</div>` : "";
@@ -542,7 +553,7 @@ document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 7개 장<
   SECS.map(s=>`<a href="#${s.id}"><span class="tn" style="color:${s.ac}">${s.n}</span><span class="tt">${s.kicker}</span><span class="td">${s.title.length>20?s.title.slice(0,20)+"…":s.title}</span></a>`).join("");
 document.getElementById("doc").innerHTML=SECS.map(secHTML).join("");
 document.getElementById("foot").innerHTML=
-  `ASTRA_정밀기획서_이전대비.html · 프로젝트 8파일 실집계 (62영업일 2025 · 점심 분리 · 중앙값)<br>예측 단위=검사 오더 시퀀스(고유 1,028) · 슬롯 수용=운영시간×장비÷고정소요 · 대기는 구조적(오더 스노우볼·동선 깊이; 산동은 R24 방문 ~16%)<br>예산은 2025–26 국내 시세·SW 노임단가 기준 <b>가견적</b> — 실견적은 RFP·벤더 견적으로 확정<br><b>이전 후 수요는 역사로 외삽 불가 — 시나리오 예측과 선제 대응이 전제.</b>`;
+  `ASTRA_정밀기획서_이전대비.html · 프로젝트 8파일 실집계 (62영업일 2025 · 점심 분리 · 중앙값)<br>예측 단위=검사 오더 시퀀스(고유 1,028) · 슬롯 수용=운영시간×장비÷고정소요 · 대기는 구조적(오더 스노우볼·동선 깊이; 산동은 R24 방문 ~16%)<br>구성 요건은 환경·물품·SW·개발 항목 명세 — 단가·총액은 RFP·벤더 견적으로 별도 산정<br><b>이전 후 수요는 역사로 외삽 불가 — 시나리오 예측과 선제 대응이 전제.</b>`;
 
 /* ===== 시뮬레이터 ===== */
 function band(u){return u>=90?"var(--danger)":u>=70?"var(--warn)":"var(--ok)";}
