@@ -1,12 +1,12 @@
 import { Hono } from 'hono'
-import { renderer } from './renderer'
 
-const app = new Hono()
+type Bindings = {
+  ASSETS: { fetch: typeof fetch }
+}
 
-app.use(renderer)
+const app = new Hono<{ Bindings: Bindings }>()
 
-app.get('/', (c) => {
-  return c.render(<h1>Hello!</h1>)
-})
+// Serve static assets (index.html etc.) via Cloudflare Pages' built-in ASSETS binding
+app.get('*', (c) => c.env.ASSETS.fetch(c.req.raw))
 
 export default app
