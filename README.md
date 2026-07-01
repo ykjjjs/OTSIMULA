@@ -7,7 +7,7 @@
 
 ## URLs
 - **Production**: https://0206da61-200c-4f0a-a620-eaf7d7084eba.vip.gensparksite.com
-- **GitHub**: GitHub 연동 후 업데이트 예정 (저장소명: OTSIMULA)
+- **GitHub**: https://github.com/ykjjjs/OTSIMULA
 
 ## 데이터 아키텍처
 - **데이터 모델**: 정적 HTML/CSS/JS (사용자 업로드 파일 `index.html`)
