@@ -6,8 +6,8 @@
 - **특징**: 단일 HTML 파일(인터랙티브 차트/시각화 포함, Chart.js 기반)로 구성된 전략 리포트
 
 ## URLs
-- **Production**: 배포 후 업데이트 예정
-- **GitHub**: 배포 후 업데이트 예정
+- **Production**: https://0206da61-200c-4f0a-a620-eaf7d7084eba.vip.gensparksite.com
+- **GitHub**: GitHub 연동 후 업데이트 예정 (저장소명: OTSIMULA)
 
 ## 데이터 아키텍처
 - **데이터 모델**: 정적 HTML/CSS/JS (사용자 업로드 파일 `index.html`)
@@ -22,3 +22,6 @@
 - **상태**: ✅ Active
 - **기술 스택**: Hono + TypeScript + Vite (정적 자산 서빙용 경량 워커)
 - **최종 업데이트**: 2026-07-01
+
+## 배포 검증
+- `GET /` → 200 OK, ASTRA 전략기획서 페이지 정상 렌더링 확인
