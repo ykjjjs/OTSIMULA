@@ -370,7 +370,7 @@ const SECS=[
      <tr class="sub"><td><b>1. 산동 플래그</b></td><td>산동(동공 확장, 15분 대기)은 코딩이 직관과 반대 — <b>1=부정(불필요) · 0=긍정(필요)</b>. 초기에 이걸 오독해 "R24 산동 100%" 오답이 났다가 정정(실제 방문의 ~16%)</td></tr>
      <tr class="sub"><td><b>2. PDIM</b></td><td><b>0 = 기록된 시행 시간이 진짜 환자 검사 시작 시간</b>(신뢰 → 학습 사용) / <b>1 = 무관</b>(학습 제외·신뢰구간 확대). R24는 신뢰 14.1%뿐 — 전산팀과 시간 정의 합의가 핵심 과제</td></tr>
      <tr class="sub"><td><b>3. PACS</b></td><td><b>0 = 장비 worklist에서 대기 리스트를 가져와야 하며 환자 검사 시작 이후 시행</b> / <b>1 = 시작 전 시행 시 worklist 호출 불가 → 시작 전 시행 금지</b>. 순서를 건너뛰어 미리 찍을 수 없음</td></tr>
-     <tr class="sub"><td><b>4. 협조도</b></td><td>환자별 검사 협조 점수 — 원천은 <b>고정 소요시간 · 접수~시행 시계열 · 나이</b>. 대기와 상관 ~−0.78로 최강 예측 변수, 여기에 역량 집중</td></tr>
+     <tr class="sub"><td><b>4. 협조도</b></td><td>환자별 검사 협조 점수 — 목표 원천은 <b>고정 소요시간 · 접수~시행 시계열 · 나이</b>. 단 <b>검사 종료 시각이 데이터에 없어</b> 예측 시점 산출은 현재 불가(가능 표본 0.5%) — 11장 진단 참조. 재진 이력 프로파일로만 접근 가능</td></tr>
      <tr class="sub"><td><b>5. 역추적</b></td><td>환자는 <b>한 실방의 검사가 끝난 후 다음 실방으로</b> 이동 — 기록만으로 동선을 앞뒤로 복원 가능</td></tr>
      <tr class="sub"><td><b>6. 평균의 오류</b></td><td>집단을 섞어 평균 내면 진실이 뒤집히고(심슨의 역설) 잘게 쪼개면 표본이 마름(차원의 저주) → 항상 <b>세그먼트 후 중앙값</b>, 소표본은 결론 유보</td></tr>
    </table>
@@ -504,7 +504,7 @@ const SECS=[
      <tr class="sub"><td><b>1. 타임스탬프 신뢰</b><br>(PDIM 상당)</td><td>PDIM=0 = 시행시간이 환자 검사 시작시간 / PDIM=1 = 무관 → 학습 제외·CI 확대. R24 신뢰 커버리지 14.1%가 병목</td><td>"이 과의 시행 기록은 환자 시작 시각인가? 아니라면 신뢰 필드는 무엇이고 검증 표본은 얼마인가?"</td></tr>
      <tr class="sub"><td><b>2. 장비 의존</b><br>(PACS 상당)</td><td>worklist 의존 — 환자 검사 시작 이후에만 시행 가능(시작 전 시행 시 worklist 호출 불가 → 금지)</td><td>"worklist 의존 장비는 무엇이고, 호출 시점 이벤트를 받을 수 있는가?"</td></tr>
      <tr class="sub"><td><b>3. 전처치 플래그</b><br>(산동 상당)</td><td>산동 0=긍정(필요)·1=부정 — 코딩 방향이 반전돼 있어 오독 시 "R24 100%" 오류 재생산. 실측 방문 ~16%</td><td>"전처치(조영제·금식·전처치약)가 필요한 오더와 그 플래그는? 코딩 방향(0/1)을 실측 대조로 검증했는가?"</td></tr>
-     <tr class="sub"><td><b>4. 협조도 원천</b><br>(최강 예측변수)</td><td>고정 소요시간 + 접수→시행 시계열 + 나이로 산출 — 대기와 상관 ~−0.78</td><td>"이 과에 협조도 3원천(고정소요·시계열·나이)이 존재하는가? 없으면 대체 변수는?"</td></tr>
+     <tr class="sub"><td><b>4. 협조도 원천</b><br>(목표 변수)</td><td>고정 소요시간+시계열+나이로 정의하려 했으나 <b>종료 시각 부재</b>로 안과에선 예측용 산출 실패(가능 0.5%·이력 n=1). 과거 −0.78은 당일 실측(누수 소지) 기반 사후치</td><td>"이 과는 <b>검사 종료 시각</b>을 기록하는가? 없으면 협조도는 폴백 대상 — 종료 시각 확보가 선결"</td></tr>
      <tr class="grp"><td colspan="3">쉽게 이해하기 — 병원 비유로 읽는 레지스트리 5원리 (처음 보는 분용)</td></tr>
      <tr><th>기술 구성</th><th>병원 비유</th><th>확산에서의 의미</th></tr>
      <tr class="sub"><td><b>공개 API</b></td><td>오더지 — 의사는 "OCT"라고만 적는다. 어느 장비·어느 기사가 할지는 안 적는다</td><td>BESTCare는 predict_wait(과·유닛·오더·순서)만 호출 — 과를 추가해도 <b>연동 계약이 영구 고정</b>, 이지케어텍과 재협상 불필요</td></tr>
@@ -521,8 +521,45 @@ const SECS=[
      charts:[{id:"cv_dept",t:"과별 대기 예측 가능성 — JMIR 2025 벤치마크 vs ASTRA 실측",cap:"막대=R²(높을수록 예측 가능) · 선=MAE(분) · <b>안과만 자체 실측</b>, 타 과는 문헌 벤치마크 — 확산 우선순위의 근거"}],
      files:[{n:"astra_ai_systems.zip",d:"6모듈 — 레지스트리에 등록될 첫 과(안과) 모델"},
             {n:"ASTRA_EMR연동_협의자료.docx",d:"과별 데이터 계약 템플릿"}]}
+ },
+ { id:"dstatus", n:"11", ac:"var(--c2)", kicker:"데이터 처리",
+   title:"데이터 사이언스 — 처리 현황과 협조도 산출 진단",
+   lead:`데이터 처리·가공·분석 현황을 <span class="em">깔때기(funnel)</span>로 공개한다. 그리고 "협조도는 산출 불가능하지 않나"라는 질문에 — <b>실측으로 답한다: 현재 데이터로는 예측용 협조도 산출이 불가능하다</b>.`,
+   body:`<p>원천 예약 259,197건이 신뢰 학습 데이터로 좁혀지는 과정과, 처리 중 교정한 데이터 오류를 그대로 공개합니다. 이어 협조도 산출 가능성을 관문별로 실측했습니다 — 결론은 지적하신 그대로입니다.</p>`,
+   dstatus:true,
+   hl:[{v:"44,357",l:"완료 검사 (원천의 17%)"},{v:"0.5<small>%</small>",l:"협조도 산출 가능 표본"},{v:"5",l:"처리 중 교정한 데이터 오류"}],
+   ev:{rationale:`<p><b>협조도 산출이 왜 불가능한가</b> — 데이터에 <span class="hi">검사 종료 시각이 없습니다</span>. 소요시간을 직접 잴 수 없어 "시행→다음 접수" 간격으로 근사하는데, 관문을 전부 통과하는 표본이 0.5%(218건)뿐이고 예측용(이력 2회↑)은 1건입니다. 과거 −0.78은 당일 실측 소요시간(누수 소지)으로 만든 사후 상관으로 예측 정당성이 없습니다.</p>
+     <ul class="clean"><li>정직한 결론: 협조도는 <b>목표 변수로 유지</b>하되 확보 조건은 <b>검사 종료 시각</b> — EMR 협의 신규 안건</li><li>대안: 재진 87% 기반 <b>환자 이력 프로파일</b>(U6 hist 패턴)만이 누수 없이 가능</li><li>이 진단 자체가 산출물 — "만들 수 있다"가 아니라 "왜 못 만드는지 증명"</li></ul>`,
+     charts:[{id:"cv_pipe",t:"처리 파이프라인 — 신뢰 데이터로 좁히기",cap:"259,197 예약 → 완료 44,357 → PDIM=0 신뢰 33,090 → 학습 29,779 (로그 축·건)"},
+             {id:"cv_coop",t:"협조도 산출 게이트 — 관문마다 붕괴 (로그 축)",cap:"완료 44,357 → 종료대용 21,861 → 정상 597 → PDIM신뢰 218 → 예측가능 1"}],
+     files:[{n:"data_status.json",d:"파이프라인·교정 로그·협조도 게이트 산출값"},
+            {n:"실방_접수시행_소요시간_예측AI.xlsx",d:"접수·시행 시각 — 종료 시각 부재 확인"},
+            {n:"ASTRA_EMR연동_협의자료.docx",d:"협조도 확보 = 종료 시각 신규 안건"}]}
  }
 ];
+function dstatusHTML(){
+  const pipe=[["원천 예약 원장","259,197","예약 기준 전체 · 미래 예약 88.5% 포함"],
+    ["완료 검사 (시각 실재)","44,357","접수·시행 시각 보유 = 원천의 17%"],
+    ["PDIM=0 신뢰 시각","33,090","학습 가능 시각 75% · PDIM=1 제외/CI 확대"],
+    ["학습 데이터셋","29,779","62영업일 · 심슨 방지 세그먼트 단위"]];
+  const corr=[["산동 플래그 반전 교정","산동가능 오독 → 산동15분후질향상(0=필요) · R24 100%→16%"],
+    ["2021 합계행 중복 제거","378,084 → 189,042 (합계행 이중계상 1건)"],
+    ["데이터 누수 차단","시행 후 변수(실제소요 등) 제외 · R² 0.99→0.75"],
+    ["R25 수용 오설정 보정","장비 1대 이론값 → 실측 p95 (84→333슬롯)"],
+    ["점심 구조 분리","11:30–13:30 교대 감축 → 회색 밴드 격리"]];
+  const gate=[["완료 검사","44,357","100%"],["+ 종료 시각 대용 (후속검사 존재)","21,861","49.3%"],
+    ["+ 정상 범위 0.5~45분","597","1.35%"],["+ PDIM=0 신뢰","218","0.49%"],["+ 이력 2회↑ (예측 가능)","1","0.00%"]];
+  const r3=r=>`<tr class="sub"><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2]}</td></tr>`;
+  return `<div class="budget"><table class="budtab">
+    <tr class="grp"><td colspan="3">A. 처리 파이프라인 (DDA → EDA → CDA → PDA)</td></tr>
+    <tr><th>단계</th><th>건수</th><th>설명</th></tr>${pipe.map(r3).join("")}
+    <tr class="grp"><td colspan="3">B. 처리 중 교정한 데이터 오류 (전부 공개)</td></tr>
+    <tr><th>교정 항목</th><th colspan="2">내용</th></tr>${corr.map(r=>`<tr class="sub"><td><b>${r[0]}</b></td><td colspan="2">${r[1]}</td></tr>`).join("")}
+    <tr class="grp"><td colspan="3">C. 협조도 산출 게이트 — "왜 못 만드는가"의 실측</td></tr>
+    <tr><th>관문</th><th>통과</th><th>비율</th></tr>${gate.map(r3).join("")}
+  </table>
+  <div class="budnote"><b>협조도 판정</b>: 예측용 산출 <b>불가</b> (가능 표본 0.5%·예측가능 1건). 근본 원인 = <b>검사 종료 시각 부재</b>로 소요시간 직접 측정 불가. 과거 −0.78은 당일 실측(누수 소지) 기반 사후치로 예측 정당성 없음. → 협조도는 목표로 유지하되 <b>종료 시각 확보(EMR 협의)</b>가 선결이며, 그 전엔 재진 이력 프로파일로만 접근합니다.</div></div>`;
+}
 
 const UPGRADES=[
  {uc:"var(--c2)",un:"U1",t:"수요 예측 엔진",pri:"이전 전 · 1순위",d:"재진 87% 반복 패턴과 다부서 유입으로 이전 후 일·시간대별 수요를 시나리오로 산출.",meta:["겨냥: 슬롯","입력: 진료예약·외래방문·5개년 시계열"],
@@ -549,8 +586,8 @@ const UPGRADES=[
   setup:["검사실_정보_기본AI로 실방별 슬롯 수용 산출","시간대별 수요 히스토그램 작성","제약: 운영시간·점심 감축·장비대수","PACS 0 검사는 검사 시작 이후 시행 순서 준수"],
   steps:["실방별 슬롯 수용 = 운영시간×장비÷고정소요","시간대 수요 프로파일(피크 34%)","피크 분산 최적화(선형계획/휴리스틱)","점심 구조 제약 반영","예약 시스템 배정 규칙 배포","실시간 포화율 모니터(U5 연동)"],
   files:[{n:"검사실_정보_기본AI.csv",d:"장비·고정소요 — 슬롯 수용"},{n:"안과_진료예약일자AI.xlsx",d:"시간대별 예약 수요"}]},
- {uc:"var(--c3)",un:"U4",t:"동선 오케스트레이션",pri:"이전 중 · 2순위",d:"키오스크·멀티채널 실시간 라우팅과 오더 시퀀스 기반 배치로 R24 스노우볼을 완화(산동 필요 검사는 사전분기).",meta:["겨냥: 대기","입력: 협조도·실시간 큐"],
-  detail:"실시간 라우팅과 오더 시퀀스 배치로 R24 스노우볼을 완화합니다. 산동 필요 검사(산동15분후질향상=0, 방문 ~16%)는 사전 분기해 15분 대기를 선반영하고, PACS worklist 순서를 지키며, 협조도(고정소요·시계열·나이 기반)를 배정 가중치로 씁니다.",
+ {uc:"var(--c3)",un:"U4",t:"동선 오케스트레이션",pri:"이전 중 · 2순위",d:"키오스크·멀티채널 실시간 라우팅과 오더 시퀀스 기반 배치로 R24 스노우볼을 완화(산동 필요 검사는 사전분기).",meta:["겨냥: 대기","입력: 실시간 큐·오더 시퀀스"],
+  detail:"실시간 라우팅과 오더 시퀀스 배치로 R24 스노우볼을 완화합니다. 산동 필요 검사(산동15분후질향상=0, 방문 ~16%)는 사전 분기해 15분 대기를 선반영하고, PACS worklist 순서를 지킵니다. (협조도 가중은 목표였으나 종료 시각 부재로 현재 데이터에선 산출 불가 — 11장 진단 참조.)",
   map:[{t:"실시간 큐",s:"실방 부하"},{t:"시퀀스 예측",s:"다음 오더"},{t:"스노우볼 회피",s:"깊은 실방 조정"},{t:"산동 사전분기",s:"15분 선반영"},{t:"안내 표시",s:"키오스크·사이니지"}],
   setup:["산동 플래그: 산동15분후질향상==0 = 산동 필요(1=부정)","PACS 0 = 검사 시작 이후 시행(worklist 의존) — 순서 준수","역추적 동선: 실방 종료→다음 실방 전이로 큐 갱신","협조도 = f(고정소요, 접수·시행 시계열, 나이) 배정 가중치"],
   steps:["실시간 실방 큐/부하 수집","오더 시퀀스 다음 스텝 예측","스노우볼 회피 배정(깊은 실방 우선순위 하향)","산동 필요 검사 사전 분기·15분 선반영","PACS worklist 호출 순서 준수(시작 전 시행 금지)","키오스크·사이니지 라우팅 안내"],
@@ -703,6 +740,7 @@ function secHTML(s){
     + (s.bestcare?bestcareHTML():"")
     + (s.aiconsole?consoleHTML():"")
     + (s.expand?expandHTML():"")
+    + (s.dstatus?dstatusHTML():"")
     + (s.simulator?simulatorHTML():"")
     + (s.upgrades?upgradesHTML():"")
     + (s.roadmap?`<div style="margin-top:18px">${roadmapHTML()}</div>`:"")
@@ -725,7 +763,7 @@ function secHTML(s){
   </section>`;
 }
 
-document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 가이드 + 10개 장</div>`+
+document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 가이드 + 11개 장</div>`+
   SECS.map(s=>`<a href="#${s.id}"><span class="tn" style="color:${s.ac}">${s.n}</span><span class="tt">${s.kicker}</span><span class="td">${s.title.length>20?s.title.slice(0,20)+"…":s.title}</span></a>`).join("");
 document.getElementById("doc").innerHTML=SECS.map(secHTML).join("");
 document.getElementById("foot").innerHTML=
@@ -780,6 +818,12 @@ function renderSec(id){
       options:baseOpt({indexAxis:"y",scales:{x:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v+"분",font:{family:"'JetBrains Mono'",size:10}}},y:{grid:{display:false},ticks:{color:TICK,font:{family:"'JetBrains Mono'",size:11}}}}})});
     mk("cv_hr",{type:"line",data:{labels:R.hourly.labels,datasets:[{data:R.hourly.v,borderColor:"#ffb24d",backgroundColor:"rgba(255,178,77,.13)",fill:true,tension:.35,pointBackgroundColor:"#ffb24d",pointRadius:3}]},
       options:baseOpt({plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].label+"시",label:i=>i.raw.toLocaleString()+"건"}}}})});
+  }
+  if(id==="dstatus"){
+    mk("cv_pipe",{type:"bar",data:{labels:["원천 예약","완료 검사","PDIM=0 신뢰","학습셋"],datasets:[{data:[259197,44357,33090,29779],backgroundColor:["#2a3344","#56b6ff","#36e0a0","#b388ff"],borderRadius:5}]},
+      options:baseOpt({indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>i.raw.toLocaleString()+"건"}}},scales:{x:{type:"logarithmic",grid:{color:GRID},ticks:{color:TICK,font:{family:"'JetBrains Mono'",size:9}}},y:{grid:{display:false},ticks:{color:TICK,font:{family:"Pretendard",size:10}}}}})});
+    mk("cv_coop",{type:"bar",data:{labels:["완료","종료대용","정상범위","PDIM신뢰","예측가능"],datasets:[{data:[44357,21861,597,218,1],backgroundColor:["#56b6ff","#56b6ff","#ffb24d","#ff6b6b","#c0344d"],borderRadius:5}]},
+      options:baseOpt({indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>i.raw.toLocaleString()+"건"}}},scales:{x:{type:"logarithmic",min:1,grid:{color:GRID},ticks:{color:TICK,font:{family:"'JetBrains Mono'",size:9}}},y:{grid:{display:false},ticks:{color:TICK,font:{family:"Pretendard",size:10}}}}})});
   }
   if(id==="expand"){
     mk("cv_dept",{data:{labels:["안과 (ASTRA 실측)","영상의학 (JMIR)","종양내과 (JMIR)","진단검사 (JMIR)"],datasets:[
