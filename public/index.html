@@ -107,6 +107,16 @@
   .ucard:hover{border-color:var(--uc)}.ucard:hover .umore{opacity:1}
   .ucard.sel{border-color:var(--uc);background:linear-gradient(180deg,color-mix(in srgb,var(--uc) 9%,var(--surface)),var(--bg2))}
   .ucard .umore{margin-left:auto;color:var(--uc)!important;border-color:var(--uc)!important;opacity:.7}
+  .upgguide{font-family:var(--mono);font-size:11px;color:var(--faint);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .upgguide::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c3);animation:upulse 1.6s ease-out infinite}
+  @keyframes upulse{0%{box-shadow:0 0 0 0 rgba(54,224,160,.5)}100%{box-shadow:0 0 0 9px rgba(54,224,160,0)}}
+  .upg.hasSel .ucard:not(.sel){opacity:.4}
+  .upg .ucard{transition:opacity .25s,border-color .2s,transform .12s}
+  .udnav{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:13px;border-top:1px solid var(--border)}
+  .udnav button{font-family:var(--mono);font-size:11.5px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 13px;cursor:pointer}
+  .udnav button:hover:not(:disabled){border-color:var(--uc);color:var(--ink)}
+  .udnav button:disabled{opacity:.35;cursor:default}
+  .udnav .udcnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
   .upgdetail{margin-top:14px;border:1px solid var(--border);border-radius:13px;padding:16px 17px;background:var(--bg2);--uc:var(--c3);font-size:13px;color:var(--muted)}
   .upgdetail .udh{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--uc);margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .upgdetail .udpri{font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:999px;border:1px solid var(--uc);color:var(--uc);font-weight:400}
@@ -541,12 +551,13 @@ function simulatorHTML(){
   </div>`;
 }
 function upgradesHTML(){
-  return `<div class="upg">${UPGRADES.map((u,i)=>`<div class="ucard" data-upg="${i}" tabindex="0" role="button" style="--uc:${u.uc}"><div class="uh"><span class="un">${u.un}</span><span class="ut">${u.t}</span><span class="pri">${u.pri}</span></div><div class="ud">${u.d}</div><div class="umeta">${u.meta.map(m=>`<span>${m}</span>`).join("")}<span class="umore">상세 ▸</span></div></div>`).join("")}</div>
-  <div class="upgdetail" id="upgDetail"><div class="udh">단계 상세</div>위 업그레이드 박스를 누르면 상세·세팅 방법·프로세스 진행 MAP·단계별 시행사항·연동 파일이 열립니다.</div>`;
+  return `<div class="upgguide">아래 6개 카드 중 하나를 누르면 바로 밑 상세 패널이 그 카드 내용으로 바뀝니다 — 패널의 "이전·다음 단계"로 순서대로 볼 수도 있습니다</div><div class="upg">${UPGRADES.map((u,i)=>`<div class="ucard" data-upg="${i}" tabindex="0" role="button" style="--uc:${u.uc}"><div class="uh"><span class="un">${u.un}</span><span class="ut">${u.t}</span><span class="pri">${u.pri}</span></div><div class="ud">${u.d}</div><div class="umeta">${u.meta.map(m=>`<span>${m}</span>`).join("")}<span class="umore">상세 ▸</span></div></div>`).join("")}</div>
+  <div class="upgdetail" id="upgDetail"><div class="udh">단계 상세 — 아직 선택 전</div>위 카드 중 하나를 누르세요. 이 자리에 그 단계의 상세·세팅 방법·프로세스 MAP·시행사항·연동 파일이 열립니다.</div>`;
 }
 function showUpg(i){
   const u=UPGRADES[i];if(!u)return;
   document.querySelectorAll(".ucard").forEach(c=>c.classList.toggle("sel",+c.dataset.upg===i));
+  document.querySelector(".upg")?.classList.add("hasSel");
   const mp=u.map.map((m,j)=>`${j?'<div class="pmar">▸</div>':''}<div class="pmbox"><div class="pmt">${m.t}</div><div class="pms">${m.s}</div></div>`).join("");
   const el=document.getElementById("upgDetail");el.style.setProperty("--uc",u.uc);
   el.innerHTML=`<div class="udh">${u.un} · ${u.t}<span class="udpri">${u.pri}</span></div>
@@ -557,7 +568,12 @@ function showUpg(i){
       <div><div class="udlbl">단계별 시행사항</div><ol class="udsteps">${u.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>
     </div>
     <div class="udlbl">연동 데이터·파일</div>
-    <div class="udfiles">${u.files.map(f=>`<div class="udfile"><span class="ufn">${f.n}</span><span class="ufd">${f.d}</span></div>`).join("")}</div>`;
+    <div class="udfiles">${u.files.map(f=>`<div class="udfile"><span class="ufn">${f.n}</span><span class="ufd">${f.d}</span></div>`).join("")}</div>
+    <div class="udnav">
+      <button data-upgnav="${i-1}" ${i===0?"disabled":""}>◀ 이전 단계${i>0?" · "+UPGRADES[i-1].un:""}</button>
+      <button data-upgnav="${i+1}" ${i===UPGRADES.length-1?"disabled":""}>다음 단계${i<UPGRADES.length-1?" · "+UPGRADES[i+1].un:""} ▶</button>
+      <span class="udcnt">${i+1} / ${UPGRADES.length}</span>
+    </div>`;
   el.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function roadmapHTML(){
@@ -731,7 +747,7 @@ document.getElementById("doc").addEventListener("click",e=>{
   head.setAttribute("aria-expanded",open?"true":"false");
   if(open)setTimeout(()=>renderSec(ev.dataset.sec),60);
 });
-document.getElementById("doc").addEventListener("click",e=>{const c=e.target.closest(".ucard");if(c)showUpg(+c.dataset.upg);});
+document.getElementById("doc").addEventListener("click",e=>{const nv=e.target.closest("[data-upgnav]");if(nv&&!nv.disabled){showUpg(+nv.dataset.upgnav);return;}const c=e.target.closest(".ucard");if(c)showUpg(+c.dataset.upg);});
 /* 시뮬레이터 와이어링 */
 (function(){
   const ids=["f_pat","f_seq","f_book","f_ot"].map(i=>document.getElementById(i));
