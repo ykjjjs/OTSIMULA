@@ -234,6 +234,27 @@
   .budtab .grp td{font-family:var(--mono);font-size:11px;color:var(--c2);padding-top:15px;letter-spacing:.04em}
   .budtab .tot td{font-weight:700;color:var(--ink);border-top:1px solid var(--border)}.budtab .tot td.num{color:var(--c1)}
   .budnote{font-size:11px;color:var(--faint);border-left:2px solid var(--border);padding-left:11px;margin-top:10px;line-height:1.7}
+  .bcwrap{margin-top:16px;border:1px solid var(--border);border-radius:14px;background:var(--bg2);overflow:hidden}
+  .bcstage{position:relative;background:radial-gradient(760px 420px at 50% 30%,#101a2b,#080b12 78%)}
+  #bcsvg{width:100%;height:auto;display:block;min-height:340px}
+  .bc-node{cursor:pointer}
+  .bc-node rect{transition:stroke-width .15s}
+  .bc-node:hover rect,.bc-node.sel rect{stroke:#fff;stroke-width:2}
+  .bc-t{font-family:var(--mono);font-weight:700;fill:#fff;text-anchor:middle;pointer-events:none}
+  .bc-s{font-size:8px;fill:rgba(215,230,250,.65);text-anchor:middle;pointer-events:none;font-family:var(--mono)}
+  .bc-edge{fill:none;transition:opacity .25s,stroke-opacity .25s}
+  .bc-lbl{font-size:8.5px;fill:#8290a6;font-family:var(--mono);text-anchor:middle;pointer-events:none}
+  .bcstage.dim .bc-edge:not(.hl){opacity:.12}.bcstage.dim .bc-lbl{opacity:.25}
+  .bc-edge.hl{stroke:#eaf4ff!important;stroke-dasharray:5 7;animation:fgflow .55s linear infinite;stroke-opacity:1!important}
+  .bcchips{display:flex;gap:8px;overflow-x:auto;padding:11px 14px;border-top:1px solid var(--border)}
+  .bcchip{flex-shrink:0;border:1px solid var(--border);border-radius:9px;padding:8px 12px;background:var(--surface);cursor:pointer;min-width:max-content}
+  .bcchip:hover,.bcchip.sel{border-color:var(--c4);background:var(--surface2)}
+  .bcchip .t{font-family:var(--mono);font-size:11px;color:var(--ink);font-weight:600}
+  .bcchip .m{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px}
+  .bcins{border-top:1px solid var(--border);padding:15px 16px;font-size:13px;color:var(--muted);min-height:50px;--ac:var(--c4)}
+  .bcins .h{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:8px}
+  .bcins p{margin:0 0 9px;line-height:1.75}.bcins b{color:var(--ink)}.bcins .hi{color:var(--ac);font-family:var(--mono);font-weight:600}
+  .bcins ul{margin:0 0 4px;padding-left:17px}.bcins li{margin:4px 0;line-height:1.65;font-size:12.5px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
   :focus-visible{outline:2px solid var(--c2);outline-offset:3px;border-radius:6px}
 </style>
@@ -371,6 +392,18 @@ const SECS=[
      <ul class="clean"><li>환경: CPU 서버·네트워크·EMR/PACS 연동 게이트웨이</li><li>소프트웨어: 예측 런타임·API·DB·대시보드·연동 미들웨어·보안</li><li>개발: U1–U6 모듈 + EMR/PACS 연동 + 재현 가능 파이프라인</li></ul>`,
      files:[{n:"검사실_정보_기본AI.csv",d:"실방·장비 구성 — 수량 가정 근거"},
             {n:"ASTRA_EMR연동_협의자료.docx",d:"연동 범위 — 개발 항목 산정"}]}
+ },
+ { id:"bestcare", n:"08", ac:"var(--c4)", kicker:"HIS 연동",
+   title:"BESTCare에 심는 경로 — 단계적 결합 아키텍처",
+   lead:`ASTRA는 BESTCare 내부에 코드를 넣는 게 아니라, 옆에 세운 <span class="em">예측 서버가 세 지점(입수·서빙·반영)</span>에서 만나며 결합 강도를 0→4단계로 올린다. 아래 다이어그램의 시스템 박스와 단계 칩을 누르면 근거·할 일이 열린다.`,
+   body:`<p>BESTCare는 서울대병원 전산실에서 분사한 이지케어텍 제품이라 SNUBH는 개발사와 가장 가까운 병원입니다. 1단계(야간 배치)는 <b>원내 의료정보팀 협의만으로</b> 가능하고, 2단계(실시간 HL7/FHIR)부터 인터페이스 협의, 3단계(화면 임베드)부터 이지케어텍 절차를 탑니다. 쓰기(4단계)는 자율성 사다리(L2 권고→L3 배치)와 병행하며 사람 승인 루프를 유지합니다.</p>`,
+   bestcare:true,
+   hl:[{v:"3",l:"결합 지점 (입수·서빙·반영)"},{v:"0→4",l:"단계적 결합 강도"},{v:"R22",l:"파일럿 권장 (PDIM 신뢰 100%)"}],
+   ev:{rationale:`<p>한 번에 심으면 인허가·보안·운영 리스크가 한꺼번에 옵니다. 결합 강도를 단계로 나누면 각 단계의 협의 상대와 리스크가 분리됩니다 — 1단계는 데이터팀, 2단계는 인터페이스, 3단계는 이지케어텍, 4단계는 거버넌스.</p>
+     <ul class="clean"><li><b>데이터 계약 4건</b>이 선결: PDIM=0 정의(R24 신뢰 14.1% 해소의 유일한 길)·PACS worklist 이벤트·산동 플래그 매핑·키오스크 도착 이벤트</li><li><b>원내망 폐쇄 운영</b>·가명처리(등록번호 대체키) — 예측에 실명 불필요</li><li>의료기기 해당 여부는 병원 심의 사항 — 운영 최적화(QI) 프레임 권장</li></ul>`,
+     files:[{n:"ASTRA_EMR연동_협의자료.docx",d:"데이터 계약 4건 — 1단계 협의 안건 그대로"},
+            {n:"대기시간_예측AI_산동_전송.xlsx",d:"PDIM/PACS/산동 플래그 정의 원천"},
+            {n:"astra_ai_systems.zip",d:"6개 모듈 — FastAPI 랩핑으로 즉시 서버화"}]}
  }
 ];
 
@@ -522,11 +555,19 @@ function budgetHTML(){
   </table>
   <div class="budnote">본 명세는 도입에 <b>필요한 항목</b>만 정리한 것으로 단가·총액을 포함하지 않습니다 — 단가·수량 확정과 견적은 RFP·벤더 견적으로 별도 산정합니다. ASTRA는 트리 기반이라 GPU 서버 불요(향후 딥러닝 확장 시 별도), ML 스택은 오픈소스 중심입니다.</div></div>`;
 }
+function bestcareHTML(){
+  return `<div class="bcwrap">
+    <div class="bcstage" id="bcstage"><svg id="bcsvg" viewBox="0 0 920 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="BESTCare 연동 아키텍처"></svg></div>
+    <div class="bcchips" id="bcchips"></div>
+    <div class="bcins" id="bcins"><div class="h">연동 인스펙터</div>시스템 박스 또는 단계 칩을 누르면 근거·할 일·협의 상대가 열립니다.</div>
+  </div>`;
+}
 function secHTML(s){
   const hl = s.hl&&s.hl.length ? `<div class="hl">${s.hl.map(c=>`<div class="cell"><div class="v">${c.v}</div><div class="l">${c.l}</div></div>`).join("")}</div>` : "";
   const body = s.body
     + (s.flowgraph?flowgraphHTML():"")
     + (s.budget?budgetHTML():"")
+    + (s.bestcare?bestcareHTML():"")
     + (s.simulator?simulatorHTML():"")
     + (s.upgrades?upgradesHTML():"")
     + (s.roadmap?`<div style="margin-top:18px">${roadmapHTML()}</div>`:"")
@@ -549,7 +590,7 @@ function secHTML(s){
   </section>`;
 }
 
-document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 7개 장</div>`+
+document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 8개 장</div>`+
   SECS.map(s=>`<a href="#${s.id}"><span class="tn" style="color:${s.ac}">${s.n}</span><span class="tt">${s.kicker}</span><span class="td">${s.title.length>20?s.title.slice(0,20)+"…":s.title}</span></a>`).join("");
 document.getElementById("doc").innerHTML=SECS.map(secHTML).join("");
 document.getElementById("foot").innerHTML=
@@ -831,6 +872,105 @@ document.getElementById("doc").addEventListener("click",e=>{const c=e.target.clo
     document.getElementById("flowsvg").addEventListener("click",e=>{const n=e.target.closest(".fg-node");if(n){mode==="order"?showOrderNode(n.dataset.node):showRoomNode(n.dataset.node);return;}const g=e.target.closest(".fg-edgeg");if(g)showEdge(+g.dataset.edge);});
     document.getElementById("flowstrip").addEventListener("click",e=>{const ch=e.target.closest(".fchip");if(!ch)return;if(ch.dataset.pat!=null)showPattern(+ch.dataset.pat);else if(ch.dataset.room)showRoomNode(ch.dataset.room);});
     document.querySelectorAll(".ftab").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.fm)));
+  }
+  init();
+})();
+/* ===== BESTCare 연동 다이어그램 ===== */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const N=[
+   {id:"cdw",x:60,y:52,w:150,h:52,c:"#56b6ff",t:"CDW / 데이터웨어하우스",s:"접수·시행·예약 원장",side:"BESTCare"},
+   {id:"ife",x:60,y:130,w:150,h:52,c:"#56b6ff",t:"인터페이스 엔진",s:"HL7 v2 / FHIR 이벤트",side:"BESTCare"},
+   {id:"rsv",x:60,y:208,w:150,h:52,c:"#56b6ff",t:"예약 모듈",s:"슬롯 배정·순번",side:"BESTCare"},
+   {id:"pacs",x:60,y:286,w:150,h:52,c:"#56b6ff",t:"PACS / 검사장비",s:"worklist 호출",side:"BESTCare"},
+   {id:"astra",x:365,y:118,w:190,h:120,c:"#b388ff",t:"ASTRA 예측 서버",s:"온프레미스 CPU · U1–U6 · REST API",side:"ASTRA"},
+   {id:"dash",x:710,y:52,w:150,h:52,c:"#36e0a0",t:"운영 대시보드",s:"원내망 · U5 경보",side:"표시·행동"},
+   {id:"kiosk",x:710,y:154,w:150,h:52,c:"#36e0a0",t:"키오스크·사이니지",s:"체크인=도착 실측",side:"표시·행동"},
+   {id:"emrui",x:710,y:256,w:150,h:52,c:"#36e0a0",t:"BESTCare 화면 임베드",s:"직원 워크스테이션",side:"표시·행동"}
+  ];
+  const E=[
+   {s:"cdw",t:"astra",st:1,lbl:"1단계 야간 배치"},
+   {s:"ife",t:"astra",st:2,lbl:"2단계 실시간 구독"},
+   {s:"pacs",t:"ife",st:2,lbl:"worklist 이벤트"},
+   {s:"astra",t:"dash",st:1,lbl:"예측 서빙"},
+   {s:"astra",t:"kiosk",st:2,lbl:"안내 + 도착 되먹임"},
+   {s:"kiosk",t:"astra",st:2,lbl:""},
+   {s:"astra",t:"emrui",st:3,lbl:"3단계 임베드·SSO"},
+   {s:"astra",t:"rsv",st:4,lbl:"4단계 쓰기(권고·승인)"}
+  ];
+  const STAGES=[
+   {n:0,t:"0단계 · 완료",m:"CDW 수동 추출 — 6모듈 학습·검증 끝",who:"—",
+    d:"<p>현재 상태. 수동 추출 파일로 <b>6개 모듈이 이미 학습·검증</b>되었습니다(시간분리·누수차단). BESTCare 본체는 전혀 건드리지 않았습니다.</p>"},
+   {n:1,t:"1단계 · 야간 배치",m:"CDW→ASTRA 일배치 — 의료정보팀 협의만",who:"원내 의료정보팀",
+    d:"<p>매일 밤 전일 접수·시행·예약 테이블을 ASTRA DB로 배치 전송(SFTP/DB링크). <span class=\'hi\'>이지케어텍 개입 없이 원내 협의만으로 가능</span>. U1 수요·U3 슬롯·U6 도착이 운영 가능해지고 대시보드는 원내망 별도 URL.</p><ul><li>협의 안건 = ASTRA_EMR연동_협의자료의 데이터 계약 4건</li><li>가명처리: 등록번호 대체키 — 예측에 실명 불필요</li></ul>"},
+   {n:2,t:"2단계 · 실시간 읽기",m:"HL7 v2/FHIR 이벤트 구독",who:"인터페이스 담당(+이지케어텍)",
+    d:"<p>접수·검사시행 이벤트를 인터페이스 엔진에서 구독(HL7 v2 ADT/ORM 또는 FHIR REST). <b>U2 트윈·U4 동선·U5 모니터링이 실시간</b>이 됩니다.</p><ul><li><span class=\'hi\'>PDIM=0 정의 확정</span>이 여기의 핵심 — R24 신뢰 14.1% 해소의 유일한 길</li><li>PACS=1 검사는 환자 검사 시작 전 시행 금지 — worklist 호출 이벤트 규격 협의</li></ul>"},
+   {n:3,t:"3단계 · 화면 임베드",m:"BESTCare UI 패널 + SSO",who:"이지케어텍",
+    d:"<p>외래·검사실 워크스테이션 화면 안에 ASTRA 패널(대기 예측·다음 오더 안내)을 iframe/포틀릿으로 삽입하고 SSO 연동. 사용자 입장에서 \'심어진\' 상태가 되는 단계로, 이지케어텍의 화면 커스터마이징 절차를 탑니다.</p>"},
+   {n:4,t:"4단계 · 쓰기(권고 반영)",m:"슬롯 권고 → 예약 모듈 · 사람 승인",who:"거버넌스(운영위)",
+    d:"<p>U3 슬롯 권고를 예약 모듈에 기록. 자율성 사다리 <b>L2 권고 → L3 배치</b>와 병행하며 <span class=\'hi\'>사람 승인 루프를 끝까지 유지</span>합니다. 의료기기 해당 여부는 병원 심의 사항 — 운영 최적화(QI) 프레임 권장.</p>"}
+  ];
+  const ND={
+   cdw:"<p><b>CDW</b> — 접수·시행·예약 원장. 1단계 야간 배치의 원천이며, 지금까지의 학습 데이터(29,779건)도 여기서 나왔습니다.</p>",
+   ife:"<p><b>인터페이스 엔진</b> — 2단계의 관문. ADT(접수)·ORM(오더) 이벤트를 HL7 v2 또는 FHIR로 내보낼지 규격 협의가 필요합니다.</p>",
+   rsv:"<p><b>예약 모듈</b> — 4단계 쓰기 대상. U3 슬롯 권고가 여기 반영되며, 반드시 사람 승인 후 기록합니다.</p>",
+   pacs:"<p><b>PACS/검사장비</b> — 규칙: <span class=\'hi\'>PACS=1 검사는 환자 검사 시작 전 시행 시 worklist 호출 불가</span> → 시작 전 시행 금지. 이 이벤트 시점이 U4 라우팅의 입력입니다.</p>",
+   astra:"<p><b>ASTRA 예측 서버</b> — 온프레미스 CPU(트리모델·GPU 불요), 6모듈은 joblib 저장 상태라 <span class=\'hi\'>FastAPI 랩핑으로 즉시 REST 서버화</span>. 원내망 폐쇄 운영.</p>",
+   dash:"<p><b>운영 대시보드</b> — U5 큐 인덱스·병목 경보. PDIM=1 다수 실방은 신뢰구간 확대 표기.</p>",
+   kiosk:"<p><b>키오스크·사이니지</b> — 체크인이 <span class=\'hi\'>실제 도착 타임스탬프를 최초로 확보</span>(U6 되먹임). 정시 18% 현실을 실측으로 잡는 장치.</p>",
+   emrui:"<p><b>BESTCare 화면 임베드</b> — 3단계. 직원이 쓰던 화면 안에서 ASTRA 예측을 보는 단계로, 이지케어텍 협의가 필수입니다.</p>"
+  };
+  const SC={1:"#36e0a0",2:"#56b6ff",3:"#b388ff",4:"#ff6b6b"};
+  const El=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  function anchor(n,other){const cx=n.x+n.w/2,cy=n.y+n.h/2,ox=other.x+other.w/2;
+    return ox>cx?{x:n.x+n.w,y:cy}:{x:n.x,y:cy};}
+  function build(){
+    const svg=document.getElementById("bcsvg");if(!svg)return;svg.innerHTML="";
+    const defs=El("defs",{});defs.innerHTML='<marker id="bca" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(220,235,255,.5)" stroke-width="1.1"/></marker>';
+    svg.appendChild(defs);
+    [["135","BESTCare (이지케어텍)"],["460","ASTRA"],["785","표시 · 행동층"]].forEach(([x,t])=>{
+      const lb=El("text",{x:x,y:26,class:"bc-lbl","font-size":"10"});lb.textContent=t;svg.appendChild(lb);});
+    const NM={};N.forEach(n=>NM[n.id]=n);
+    E.forEach((e,i)=>{
+      const a=anchor(NM[e.s],NM[e.t]),b=anchor(NM[e.t],NM[e.s]);
+      const mx=(a.x+b.x)/2;
+      const p=El("path",{class:"bc-edge","data-st":e.st,d:`M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x-6},${b.y}`,
+        stroke:SC[e.st],"stroke-width":e.st===4?2:1.7,"stroke-opacity":.55,"marker-end":"url(#bca)","stroke-dasharray":e.st===4?"6 5":"none"});
+      svg.appendChild(p);
+      if(e.lbl){const lx=mx,ly=(a.y+b.y)/2-6;const t=El("text",{class:"bc-lbl",x:lx,y:ly});t.textContent=e.lbl;svg.appendChild(t);}
+    });
+    N.forEach(n=>{
+      const g=El("g",{class:"bc-node","data-node":n.id,tabindex:"0"});
+      g.appendChild(El("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:10,fill:n.c+"1c",stroke:n.c,"stroke-width":1.4}));
+      const t1=El("text",{class:"bc-t",x:n.x+n.w/2,y:n.y+(n.id==="astra"?46:24),"font-size":n.id==="astra"?"13":"10.5"});t1.textContent=n.t;g.appendChild(t1);
+      const t2=El("text",{class:"bc-s",x:n.x+n.w/2,y:n.y+(n.id==="astra"?68:40)});t2.textContent=n.s;g.appendChild(t2);
+      if(n.id==="astra"){const t3=El("text",{class:"bc-s",x:n.x+n.w/2,y:n.y+90});t3.textContent="U1 수요 · U2 트윈 · U3 슬롯 · U4 동선 · U5 감시 · U6 도착";g.appendChild(t3);}
+      svg.appendChild(g);
+    });
+  }
+  function chips(){
+    document.getElementById("bcchips").innerHTML=STAGES.map((s,i)=>
+      `<div class="bcchip" data-st="${s.n}" tabindex="0"><div class="t">${s.t}</div><div class="m">${s.m}</div></div>`).join("");
+  }
+  function clear(){
+    document.querySelectorAll("#bcsvg .bc-node.sel,.bcchip.sel").forEach(e=>e.classList.remove("sel"));
+    document.querySelectorAll("#bcsvg .bc-edge.hl").forEach(e=>e.classList.remove("hl"));
+    document.getElementById("bcstage").classList.remove("dim");
+  }
+  function ins(html){document.getElementById("bcins").innerHTML='<div class="h">연동 인스펙터</div>'+html;}
+  function showNode(id){clear();document.querySelector(`#bcsvg .bc-node[data-node="${id}"]`)?.classList.add("sel");ins(ND[id]||id);}
+  function showStage(n){clear();
+    document.querySelector(`.bcchip[data-st="${n}"]`)?.classList.add("sel");
+    const st=STAGES.find(x=>x.n===n);
+    if(n>0){document.getElementById("bcstage").classList.add("dim");
+      document.querySelectorAll(`#bcsvg .bc-edge[data-st="${n}"]`).forEach(e=>e.classList.add("hl"));}
+    ins(st.d+`<p style="margin-top:6px"><b>협의 상대:</b> <span class="hi">${st.who}</span></p>`);
+  }
+  function init(){
+    if(!document.getElementById("bcsvg"))return;
+    build();chips();
+    document.getElementById("bcsvg").addEventListener("click",e=>{const n=e.target.closest(".bc-node");if(n)showNode(n.dataset.node);});
+    document.getElementById("bcchips").addEventListener("click",e=>{const c=e.target.closest(".bcchip");if(c)showStage(+c.dataset.st);});
   }
   init();
 })();
