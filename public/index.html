@@ -355,6 +355,33 @@ const R = {
 
 /* ===== 문서 섹션 (서사 뼈대 비노출: 문제재정의→변곡점→예측→AI업그레이드→로드맵) ===== */
 const SECS=[
+ { id:"guide", n:"00", ac:"var(--c3)", kicker:"처음 오신 분",
+   title:"5분 가이드 — 이 문서를 읽는 법",
+   lead:`ASTRA는 안과 이전을 앞두고 <span class="em">환자가 검사실에서 얼마나 기다릴지 예측하고 동선을 최적화</span>하는 AI 프로젝트다. 배경 지식이 없어도 이 장만 읽으면 나머지 10개 장이 읽힌다.`,
+   body:`<p><b>무엇을·왜</b> — 안과가 곧 이전합니다. 공간·장비가 늘지만 환자·검사도 함께 늘어, 과거 경험만으로는 이전 후를 알 수 없습니다. 그래서 실데이터(완료 검사 <b>29,779건</b>, 62영업일)로 대기를 예측하고 시나리오를 미리 돌려봅니다. 이 문서의 모든 수치는 실측이며 가짜(mock)가 없습니다.</p>
+   <div class="budget"><table class="budtab">
+     <tr class="grp"><td colspan="2">용어 5개 — 이것만 알면 됩니다</td></tr>
+     <tr class="sub"><td><b>실방</b></td><td>검사실 방. 안과에 5개 — R21 시야 · R22 OCT · R24 안저 · R25 전안부 · R34 색각</td></tr>
+     <tr class="sub"><td><b>오더</b></td><td>의사의 검사 지시("OCT 찍으세요"). 총 97종</td></tr>
+     <tr class="sub"><td><b>시퀀스</b></td><td>한 환자가 하루에 받는 검사들의 순서(예: OCT→안저). 고유 패턴 1,028개 — <b>이 문서의 예측 단위</b></td></tr>
+     <tr class="sub"><td><b>슬롯</b></td><td>검사실이 시간당 소화 가능한 예약 자리 = 운영시간×장비÷소요시간</td></tr>
+     <tr class="sub"><td><b>MAE / R²</b></td><td>예측이 평균 몇 분 틀리나(작을수록 좋음) / 현실을 얼마나 설명하나(0~1, 클수록 좋음)</td></tr>
+     <tr class="grp"><td colspan="2">이 프로젝트의 법 6조 — 하나라도 어기면 분석이 무너집니다</td></tr>
+     <tr class="sub"><td><b>1. 산동 플래그</b></td><td>산동(동공 확장, 15분 대기)은 코딩이 직관과 반대 — <b>1=부정(불필요) · 0=긍정(필요)</b>. 초기에 이걸 오독해 "R24 산동 100%" 오답이 났다가 정정(실제 방문의 ~16%)</td></tr>
+     <tr class="sub"><td><b>2. PDIM</b></td><td><b>0 = 기록된 시행 시간이 진짜 환자 검사 시작 시간</b>(신뢰 → 학습 사용) / <b>1 = 무관</b>(학습 제외·신뢰구간 확대). R24는 신뢰 14.1%뿐 — 전산팀과 시간 정의 합의가 핵심 과제</td></tr>
+     <tr class="sub"><td><b>3. PACS</b></td><td><b>0 = 장비 worklist에서 대기 리스트를 가져와야 하며 환자 검사 시작 이후 시행</b> / <b>1 = 시작 전 시행 시 worklist 호출 불가 → 시작 전 시행 금지</b>. 순서를 건너뛰어 미리 찍을 수 없음</td></tr>
+     <tr class="sub"><td><b>4. 협조도</b></td><td>환자별 검사 협조 점수 — 원천은 <b>고정 소요시간 · 접수~시행 시계열 · 나이</b>. 대기와 상관 ~−0.78로 최강 예측 변수, 여기에 역량 집중</td></tr>
+     <tr class="sub"><td><b>5. 역추적</b></td><td>환자는 <b>한 실방의 검사가 끝난 후 다음 실방으로</b> 이동 — 기록만으로 동선을 앞뒤로 복원 가능</td></tr>
+     <tr class="sub"><td><b>6. 평균의 오류</b></td><td>집단을 섞어 평균 내면 진실이 뒤집히고(심슨의 역설) 잘게 쪼개면 표본이 마름(차원의 저주) → 항상 <b>세그먼트 후 중앙값</b>, 소표본은 결론 유보</td></tr>
+   </table>
+   <div class="budnote"><b>조작법</b> — 오른쪽(모바일은 하단)의 00~10 숫자 칩으로 어느 장이든 즉시 이동, ▲는 맨 위. 문서 안의 상자·그래프·칩은 거의 다 클릭됩니다 — 누르면 근거·차트·관련 파일이 열립니다. <b>추천 순서</b>: 급하면 01(문제 정의)→04(시뮬레이터)→09(AI 콘솔 직접 실행)만, 정독은 01부터 차례로. 핵심 발견 한 줄: 대기의 정체는 장비 부족이 아니라 <b>검사 순서의 누적(첫 검사 ~7분 → 5번째 ~45분, 스노우볼)</b>입니다.</div></div>`,
+   hl:[{v:"29,779",l:"실측 검사 기록 (mock 0건)"},{v:"10+1",l:"장 구성 — 전부 클릭해서 확인"},{v:"6",l:"문서 안에서 실행되는 AI (09장)"}],
+   ev:{rationale:`<p>이 문서의 원칙은 <b>"주장하면 근거를 옆에 둔다"</b>입니다 — 모든 수치는 클릭하면 계산 근거·차트·원천 파일이 열리고, 09장에서는 AI가 실제로 돌아갑니다. 검토자가 "믿어달라"가 아니라 <b>"눌러서 확인했다"</b>로 끝나게 설계했습니다.</p>
+     <ul class="clean"><li>모든 모델 검증은 시간분리(과거 학습→미래 시험)·누수 차단·seed 고정(재현)</li><li>단순한 모델이 이기면 단순한 쪽 채택(U1) — 정직 원칙</li><li>틀리면 문서에 남기고 정정(산동 100% 오류, 2021 합계행 중복)</li></ul>`,
+     files:[{n:"실방접수_prediction_dataset_v2.csv",d:"학습 원천 29,779건 — 모든 수치의 뿌리"},
+            {n:"astra_ai_systems.zip",d:"6개 AI 소스 — run_all.py로 전체 재현"}]}
+ },
+
  { id:"redef", n:"01", ac:"var(--c1)", kicker:"문제 재정의",
    title:"One-Stop은 증상이다 — 병은 대기·슬롯 부족·도착 행동",
    lead:`완료율을 KPI로 쫓으면 표면만 본다. 근본 원인은 <span class="em">검사 대기</span>, <span class="em">예약 슬롯 부족</span>, 그리고 <span class="em">예약 시각과 어긋나는 환자 도착</span>이다.`,
@@ -698,7 +725,7 @@ function secHTML(s){
   </section>`;
 }
 
-document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 10개 장</div>`+
+document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 가이드 + 10개 장</div>`+
   SECS.map(s=>`<a href="#${s.id}"><span class="tn" style="color:${s.ac}">${s.n}</span><span class="tt">${s.kicker}</span><span class="td">${s.title.length>20?s.title.slice(0,20)+"…":s.title}</span></a>`).join("");
 document.getElementById("doc").innerHTML=SECS.map(secHTML).join("");
 document.getElementById("foot").innerHTML=
