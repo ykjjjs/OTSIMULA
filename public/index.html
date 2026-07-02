@@ -246,7 +246,7 @@
   .budnote{font-size:11px;color:var(--faint);border-left:2px solid var(--border);padding-left:11px;margin-top:10px;line-height:1.7}
   .bcwrap{margin-top:16px;border:1px solid var(--border);border-radius:14px;background:var(--bg2);overflow:hidden}
   .bcstage{position:relative;background:radial-gradient(760px 420px at 50% 30%,#101a2b,#080b12 78%)}
-  #bcsvg{width:100%;height:auto;display:block;min-height:340px}
+  #bcsvg,#exsvg{width:100%;height:auto;display:block;min-height:340px}
   .bc-node{cursor:pointer}
   .bc-node rect{transition:stroke-width .15s}
   .bc-node:hover rect,.bc-node.sel rect{stroke:#fff;stroke-width:2}
@@ -466,6 +466,28 @@ const SECS=[
      <ul class="clean"><li>U1 챔피언=중앙값 프로파일(MAE 3.39) — 62영업일 소표본에서 XGB(3.95)보다 우세해 정직 채택</li><li>U2 MAE 5.03분·R² 0.647 — 시간분리 기준의 보수적(운영 현실) 성능</li><li>U5 리플레이: PDIM=1 다수 실방은 신뢰구간 확대 표기</li></ul>`,
      files:[{n:"astra_ai_systems.zip",d:"6개 모듈 소스·모델 (run_all.py 재현)"},
             {n:"실방접수_prediction_dataset_v2.csv",d:"학습 원천 29,779건"}]}
+ },
+ { id:"expand", n:"10", ac:"var(--c1)", kicker:"확산",
+   title:"전 진료과 확산 — 공개 API · 모델 레지스트리 아키텍처",
+   lead:`확산의 병목은 모델이 아니라 <span class="em">과별 도메인 규칙과 타임스탬프 신뢰</span>다. BESTCare는 과 비종속 공개 API 하나만 호출하고, 레지스트리가 조건(과·검사유형·PDIM 관문·최소표본)에 맞는 모델을 선택한다 — 과를 추가해도 연동 계약은 깨지지 않는다.`,
+   body:`<p>이 구조는 멀티 실리콘 LLM 추론에서 검증된 계층형 커널 시스템(TokenSpeed-kernel)의 번역입니다: 런타임은 "AMD 커널"을 지명하지 않고 연산 문제만 기술하듯, BESTCare는 "안과 R24 모델"을 지명하지 않고 <b>predict_wait(과·유닛·오더·순서)</b>만 요청합니다. 과별 모델은 메타데이터(과·검사유형·PDIM 신뢰·최소표본·버전)를 선언해 레지스트리에 등록되고, 선택기가 부적합을 걸러 순위를 매깁니다. 표본 부족·관문 미통과 과는 <b>병원 공통 폴백 프로파일</b>이 서빙합니다 — 심슨의 역설·차원의 저주 방어이기도 합니다. 아래 박스·확산 단계 칩을 누르면 근거가 열립니다.</p>
+   <div class="budget"><table class="budtab">
+     <tr class="grp"><td colspan="3">과별 데이터 계약 — 각 과의 "산동"을 찾는 4문항 (확산 진입 관문의 실체)</td></tr>
+     <tr><th>계약 항목</th><th>안과에서의 정답 (검증 완료)</th><th>확산 과에서 물어야 할 질문</th></tr>
+     <tr class="sub"><td><b>1. 타임스탬프 신뢰</b><br>(PDIM 상당)</td><td>PDIM=0 = 시행시간이 환자 검사 시작시간 / PDIM=1 = 무관 → 학습 제외·CI 확대. R24 신뢰 커버리지 14.1%가 병목</td><td>"이 과의 시행 기록은 환자 시작 시각인가? 아니라면 신뢰 필드는 무엇이고 검증 표본은 얼마인가?"</td></tr>
+     <tr class="sub"><td><b>2. 장비 의존</b><br>(PACS 상당)</td><td>worklist 의존 — 환자 검사 시작 이후에만 시행 가능(시작 전 시행 시 worklist 호출 불가 → 금지)</td><td>"worklist 의존 장비는 무엇이고, 호출 시점 이벤트를 받을 수 있는가?"</td></tr>
+     <tr class="sub"><td><b>3. 전처치 플래그</b><br>(산동 상당)</td><td>산동 0=긍정(필요)·1=부정 — 코딩 방향이 반전돼 있어 오독 시 "R24 100%" 오류 재생산. 실측 방문 ~16%</td><td>"전처치(조영제·금식·전처치약)가 필요한 오더와 그 플래그는? 코딩 방향(0/1)을 실측 대조로 검증했는가?"</td></tr>
+     <tr class="sub"><td><b>4. 협조도 원천</b><br>(최강 예측변수)</td><td>고정 소요시간 + 접수→시행 시계열 + 나이로 산출 — 대기와 상관 ~−0.78</td><td>"이 과에 협조도 3원천(고정소요·시계열·나이)이 존재하는가? 없으면 대체 변수는?"</td></tr>
+   </table>
+   <div class="budnote">이 4문항에 답하지 못한 과는 특화 모델 등록 불가 — 폴백 프로파일만 서빙합니다. 역추적 원칙(한 유닛의 검사 종료 → 다음 유닛 이동)은 전 과 공통으로 적용되어 과간 동선 복원의 근거가 됩니다.</div></div>`,
+   expand:true,
+   hl:[{v:"1",l:"공개 API — 과 비종속 연동 계약"},{v:"P1",l:"레지스트리 도입 시점 (두 번째 과)"},{v:"0.77",l:"영상의학 R² (JMIR) — 차기 후보 근거"}],
+   ev:{rationale:`<p>안과에서 산동·PDIM을 잡는 데 들인 과정이 곧 확산 플레이북입니다 — 각 과에는 자기만의 "산동"(내시경 전처치, 조영제 대기 등)이 있어, 확산 = 모델 복사가 아니라 <b>도메인 규칙 청취 → 데이터 계약 → 재학습</b>의 반복입니다.</p>
+     <ul class="clean"><li><b>선택 관문 강제</b>: 그 과의 PDIM=0 정의 검증 통과 전엔 선택 불가 — 폴백만 서빙</li><li><b>검증 하니스 공유</b>: 챔피언-챌린저·시간분리를 전 과 표준으로 (U1에서 프로파일이 XGB를 이긴 정직 채택 규칙)</li><li><b>Simplicity First</b>: 파일럿(안과 단독)에선 레지스트리를 만들지 않는다 — FastAPI+딕셔너리로 충분. 도입은 두 번째 과 진입 시점. 단 API 요청 스키마에 과 필드는 지금부터 포함</li><li><b>과간 시퀀스</b>: 외래 전체로 가면 스노우볼이 병원 레벨로 확장 — 한 과의 지연이 다른 과의 대기를 만드는 구조를 처음 계측</li></ul>`,
+     charts:[{id:"cv_dept",t:"과별 대기 예측 가능성 — JMIR 2025 벤치마크 vs ASTRA 실측",cap:"막대=R²(높을수록 예측 가능) · 선=MAE(분) · <b>안과만 자체 실측</b>, 타 과는 문헌 벤치마크 — 확산 우선순위의 근거"}],
+     files:[{n:"TokenSpeed-kernel 기술문서",d:"공개 API·레지스트리·선택기·플러그인 패턴 원전"},
+            {n:"astra_ai_systems.zip",d:"6모듈 — 레지스트리에 등록될 첫 과(안과) 모델"},
+            {n:"ASTRA_EMR연동_협의자료.docx",d:"과별 데이터 계약 템플릿"}]}
  }
 ];
 
@@ -626,6 +648,13 @@ function budgetHTML(){
 function consoleHTML(){
   return `<div id="aicon"><div class="atabs" id="aictabs"></div><div id="aicpanels"></div></div>`;
 }
+function expandHTML(){
+  return `<div class="bcwrap">
+    <div class="bcstage" id="exstage"><svg id="exsvg" viewBox="0 0 920 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="모델 레지스트리 확산 아키텍처"></svg></div>
+    <div class="bcchips" id="exchips"></div>
+    <div class="bcins" id="exins" style="--ac:var(--c1)"><div class="h">확산 인스펙터</div>박스(API·선택기·레지스트리·모델·관문) 또는 확산 단계 칩을 누르면 근거가 열립니다.</div>
+  </div>`;
+}
 function bestcareHTML(){
   return `<div class="bcwrap">
     <div class="bcstage" id="bcstage"><svg id="bcsvg" viewBox="0 0 920 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="BESTCare 연동 아키텍처"></svg></div>
@@ -640,6 +669,7 @@ function secHTML(s){
     + (s.budget?budgetHTML():"")
     + (s.bestcare?bestcareHTML():"")
     + (s.aiconsole?consoleHTML():"")
+    + (s.expand?expandHTML():"")
     + (s.simulator?simulatorHTML():"")
     + (s.upgrades?upgradesHTML():"")
     + (s.roadmap?`<div style="margin-top:18px">${roadmapHTML()}</div>`:"")
@@ -662,7 +692,7 @@ function secHTML(s){
   </section>`;
 }
 
-document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 9개 장</div>`+
+document.getElementById("toc").innerHTML=`<div class="toc-h">목차 · 10개 장</div>`+
   SECS.map(s=>`<a href="#${s.id}"><span class="tn" style="color:${s.ac}">${s.n}</span><span class="tt">${s.kicker}</span><span class="td">${s.title.length>20?s.title.slice(0,20)+"…":s.title}</span></a>`).join("");
 document.getElementById("doc").innerHTML=SECS.map(secHTML).join("");
 document.getElementById("foot").innerHTML=
@@ -717,6 +747,15 @@ function renderSec(id){
       options:baseOpt({indexAxis:"y",scales:{x:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v+"분",font:{family:"'JetBrains Mono'",size:10}}},y:{grid:{display:false},ticks:{color:TICK,font:{family:"'JetBrains Mono'",size:11}}}}})});
     mk("cv_hr",{type:"line",data:{labels:R.hourly.labels,datasets:[{data:R.hourly.v,borderColor:"#ffb24d",backgroundColor:"rgba(255,178,77,.13)",fill:true,tension:.35,pointBackgroundColor:"#ffb24d",pointRadius:3}]},
       options:baseOpt({plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].label+"시",label:i=>i.raw.toLocaleString()+"건"}}}})});
+  }
+  if(id==="expand"){
+    mk("cv_dept",{data:{labels:["안과 (ASTRA 실측)","영상의학 (JMIR)","종양내과 (JMIR)","진단검사 (JMIR)"],datasets:[
+      {type:"bar",label:"R²",data:[0.752,0.77,0.71,0.64],backgroundColor:["#36e0a0","#ffb24d","#56627a","#56627a"],borderRadius:5,yAxisID:"y"},
+      {type:"line",label:"MAE(분)",data:[4.04,8.7,12.3,6.2],borderColor:"#b388ff",backgroundColor:"#b388ff",tension:.3,pointRadius:4,yAxisID:"y1"}]},
+      options:baseOpt({plugins:{legend:{display:true,labels:{color:TICK,font:{family:"Pretendard",size:10},boxWidth:10,padding:8}},tooltip:{}},
+        scales:{x:{grid:{display:false},ticks:{color:TICK,font:{family:"Pretendard",size:10}}},
+          y:{position:"left",min:0,max:1,grid:{color:GRID},ticks:{color:TICK,font:{family:"'JetBrains Mono'",size:9}}},
+          y1:{position:"right",grid:{display:false},ticks:{color:"#b388ff",font:{family:"'JetBrains Mono'",size:9},callback:v=>v+"분"},beginAtZero:true}}})});
   }
   if(id==="move"){
     mk("cv_yr",{type:"bar",data:{labels:R.yearly.labels,datasets:[
@@ -1167,6 +1206,77 @@ u1run();u2init();u6init();u3init();u4init();u5init();
 
 })();
 
+/* ===== 10장 확산 — 모델 레지스트리 다이어그램 ===== */
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const N=[
+   {id:"api",x:40,y:150,w:170,h:66,c:"#56b6ff",t:"BESTCare 공개 API",s:"predict_wait(과·유닛·오더·순서)"},
+   {id:"sel",x:290,y:150,w:160,h:66,c:"#b388ff",t:"선택기 (Selector)",s:"필터 → 순위 → 캐시"},
+   {id:"gate",x:290,y:288,w:160,h:58,c:"#ff6b6b",t:"데이터 계약 관문",s:"PDIM=0 정의 · 최소표본"},
+   {id:"m_eye",x:540,y:44,w:180,h:50,c:"#36e0a0",t:"안과 Sub AI",s:"검증완료 · R² 0.647 · U1–U6"},
+   {id:"m_rad",x:540,y:112,w:180,h:50,c:"#ffb24d",t:"영상의학 (차기)",s:"JMIR R² 0.77 — 후보"},
+   {id:"m_lab",x:540,y:180,w:180,h:50,c:"#ffb24d",t:"진단검사 (차기)",s:"검사 중심 유사 과"},
+   {id:"m_fb",x:540,y:262,w:180,h:50,c:"#8290a6",t:"병원 공통 폴백",s:"프로파일 — 관문 미통과 시"},
+   {id:"harn",x:770,y:130,w:120,h:80,c:"#56b6ff",t:"검증 하니스",s:"챔피언-챌린저 · 시간분리"}
+  ];
+  const E=[
+   {s:"api",t:"sel",lbl:"과 비종속 요청"},
+   {s:"gate",t:"sel",lbl:"선택 조건 강제"},
+   {s:"sel",t:"m_eye",lbl:""},{s:"sel",t:"m_rad",lbl:""},{s:"sel",t:"m_lab",lbl:""},
+   {s:"sel",t:"m_fb",lbl:"표본부족·미통과 → 폴백",dash:1},
+   {s:"harn",t:"m_eye",lbl:""},{s:"harn",t:"m_rad",lbl:""},{s:"harn",t:"m_lab",lbl:""}
+  ];
+  const ND={
+   api:'<p><b>공개 API</b> — 연동 계약의 전부. BESTCare는 "안과 R24 모델"을 지명하지 않고 요청(과·유닛·오더·순서)만 기술합니다. <span class="hi">과를 추가해도 이지케어텍과 인터페이스 재협상이 없습니다</span> — TokenSpeed의 플랫폼 비종속 API와 동형. 요청 스키마의 과 필드는 파일럿부터 포함(무중단 전환 대비).</p>',
+   sel:'<p><b>선택기</b> — 부적합 필터 → 순위 → 캐시. <span class="hi">어느 모델이 예측했는지 트레이스</span>가 남아 거버넌스·감사에 대응합니다.</p><ul><li><b>등록 메타데이터 명세</b>: 과(dept)·유닛·오더유형 시그니처·최소표본 충족 여부·PDIM 검증일·전처치 플래그 검증일·모델 버전·우선순위·폴백 경로</li><li><b>필터 규칙</b>: 데이터 계약 미통과 → 후보 제외 / 표본 &lt; 가드 → 제외 / 통과 후보 중 하니스 성적순</li><li><b>캐시</b>: 과·유닛·오더 고정 조건은 선택 결과 캐시(TokenSpeed의 resolved callable 캐싱과 동형)</li></ul>',
+   gate:'<p><b>데이터 계약 관문</b> — 확산의 진입 조건은 기술이 아니라 데이터 계약: 그 과의 <span class="hi">PDIM=0 정의(시행시간=환자 시작시간) 검증 통과 전엔 특화 모델 선택 불가</span>, 폴백만 서빙. 최소표본 가드로 과를 섞어 평균 내는 심슨의 역설·차원의 저주를 코드로 방어합니다.</p>',
+   m_eye:'<p><b>안과 Sub AI</b> — 첫 등록 모델. U1–U6, 시간분리 검증(U2 R² 0.647·MAE 5.03분), 산동(0=긍정)·PDIM·PACS 규칙 내장. 확산 플레이북의 원본입니다.</p>',
+   m_rad:'<p><b>영상의학 (차기 후보)</b> — JMIR 벤치마크 radiology R² 0.77로 예측 가능성이 이미 입증된 영역. 검사 중심 흐름이 안과와 유사해 <span class="hi">두 번째 과 = 레지스트리 도입 시점</span>의 최적 후보. 이 과의 "산동"(조영제 대기 등)은 별도 청취 필요.</p>',
+   m_lab:'<p><b>진단검사의학 (차기)</b> — 검사 중심 유사 과. 동일 파이프라인(오더 시퀀스·도착 행동·스노우볼 재측정)으로 진입하되 도메인 규칙은 새로 청취합니다.</p>',
+   m_fb:'<p><b>병원 공통 폴백</b> — TokenSpeed의 "이식 가능한 Triton 기준선"에 해당. 신규 과를 즉시 가동시키고, 특화 모델은 점진 추가. <span class="hi">폴백 없이는 확산이 관문에서 멈춥니다.</span></p>',
+   harn:'<p><b>검증 하니스</b> — 전 과 공통 챔피언-챌린저·시간분리·재현(seed 고정). U1에서 프로파일이 XGB를 이겨 정직 채택된 규칙을 표준으로: <span class="hi">이긴 모델이 자동 등록</span>되고 트레이스가 남습니다.</p>'
+  };
+  const CH=[
+   {t:"P0 · 안과 파일럿",m:"레지스트리 없음 — FastAPI+딕셔너리",d:'<p><b>P0 — 지금.</b> Simplicity First: 과가 하나일 때 레지스트리는 과설계 — <span class="hi">FastAPI + 모델 딕셔너리</span>로 서빙.</p><ul><li><b>진입조건</b>: 완료 — 6모듈 학습·시간분리 검증 끝</li><li><b>산출물</b>: 예측 API·대시보드(원내망)·야간 배치</li><li><b>검증 기준</b>: R22(PDIM 신뢰 100%)에서 U2 MAE ≤ 5분 운영 확인</li><li><b>협의 상대</b>: 원내 의료정보팀</li><li><b>리스크</b>: R24 신뢰 14.1% — PDIM 정의 협의 전까지 R24는 CI 확대 서빙</li><li><b>지금 할 일</b>: API 요청 스키마에 과 필드 선반영(무중단 전환 대비)</li></ul>'},
+   {t:"P1 · 유사과 2곳",m:"레지스트리 도입 — 영상의학·진단검사",d:'<p><b>P1 — 레지스트리 탄생 시점.</b> 검사 중심 유사 과부터: <span class="hi">영상의학(JMIR R² 0.77)·진단검사(0.64)</span> — 문헌으로 예측 가능성이 입증된 영역.</p><ul><li><b>진입조건</b>: 각 과의 데이터 계약 4문항 통과(위 표) — 특히 전처치 플래그 코딩 방향(0/1) 실측 대조</li><li><b>산출물</b>: 등록 데코레이터·선택기·폴백 경로, 과 팀이 <span class="hi">코어 수정 없이 자기 모델 등록</span>(플러그인)</li><li><b>검증 기준</b>: 신규 과 시간분리 MAE가 폴백 대비 우세할 때만 챔피언 승격</li><li><b>협의 상대</b>: 해당 과 + 의료정보팀 + (2단계 이벤트 시) 인터페이스</li><li><b>리스크</b>: 과별 "산동" 오독 — 안과처럼 플래그 반전 가능성을 기본 가정으로 검증</li></ul>'},
+   {t:"P2 · 외래 전체",m:"과간 시퀀스 — 병원 스노우볼",d:'<p><b>P2 — 과 경계를 넘는 예측.</b> 환자 동선이 과를 넘으면(안과→내분비 등) 스노우볼이 병원 레벨로 확장 — <span class="hi">한 과의 지연이 다른 과의 대기를 만드는 구조를 처음 계측·예측</span>.</p><ul><li><b>진입조건</b>: 3개 과 이상 안정 서빙 + 과간 방문 조인 검증(외래_방문일자 원천)</li><li><b>산출물</b>: 과간 오더 시퀀스 그래프·병원 스노우볼 계수(과내 1→5스텝 7→45분의 병원판 재측정)</li><li><b>검증 기준</b>: 과간 전이 예측 top-3 정확도 — 안과 내부 78.3%를 기준선으로</li><li><b>주의</b>: 과가 늘수록 과×검사×시퀀스 조합 폭발(차원의 저주) — 세그먼트+최소표본 가드+중앙값, 과를 섞어 평균 내지 않기</li></ul>'},
+   {t:"P3 · 병원 전체 KPI",m:"입원·수술 연계 — Living Hospital",d:'<p><b>P3 — Living Hospital 완성.</b> 외래를 넘어 입원·수술 일정과 연계, 기존 로드맵 Phase 4(타 부서 확장·<span class="hi">병원 전체 대기 15% 감소 목표</span>)와 정합.</p><ul><li><b>진입조건</b>: P2 과간 시퀀스 안정 + 거버넌스(운영위) 상설화</li><li><b>산출물</b>: 병원 단위 수요-수용 트윈·MLOps 상설 파이프라인(과 수만큼 늘어난 재학습을 U5 되먹임 표준으로)</li><li><b>자율성</b>: 과별로 사다리를 따로 밟음 — 안과가 L3여도 신규 과는 L1부터, 사람 감독은 끝까지</li><li><b>리스크</b>: 의료기기 해당 여부·QI/연구 구분을 과 확장 시점마다 재검토</li></ul>'},
+   {t:"공통 관문",m:"데이터 계약 통과 전 폴백만",d:'<p><b>모든 단계 공통.</b> 진입 조건 = 기술이 아니라 <span class="hi">데이터 계약 4문항</span>(위 표) — 타임스탬프 신뢰·장비 의존·전처치 플래그·협조도 원천.</p><ul><li>미통과 과는 폴백 프로파일만 서빙 — <span class="hi">"산동 100%" 같은 플래그 오독의 과별 재생산을 관문이 차단</span></li><li>통과 검증은 공유 하니스(챔피언-챌린저·시간분리·seed 고정)로 — 이긴 모델만 자동 승격·트레이스 기록</li><li>평균의 오류 상시 경계: 과 단위 집계는 항상 세그먼트 후 중앙값</li></ul>'}
+  ];
+  const El=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  function anchor(n,o){const cy=n.y+n.h/2,ox=o.x+o.w/2;return (o.x+o.w/2)>(n.x+n.w/2)?{x:n.x+n.w,y:cy}:{x:n.x,y:cy};}
+  function build(){
+    const svg=document.getElementById("exsvg");if(!svg)return;svg.innerHTML="";
+    const defs=El("defs",{});defs.innerHTML='<marker id="exa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="rgba(220,235,255,.5)" stroke-width="1.1"/></marker>';
+    svg.appendChild(defs);
+    [["125","BESTCare"],["370","선택 계층"],["630","모델 레지스트리 (과별)"],["830","품질"]].forEach(([x,t])=>{const lb=El("text",{x:x,y:24,class:"bc-lbl","font-size":"10"});lb.textContent=t;svg.appendChild(lb);});
+    const NM={};N.forEach(n=>NM[n.id]=n);
+    E.forEach(e=>{
+      const a=anchor(NM[e.s],NM[e.t]),b=anchor(NM[e.t],NM[e.s]);
+      const mx=(a.x+b.x)/2;
+      svg.appendChild(El("path",{class:"bc-edge",d:`M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x-6},${b.y}`,
+        stroke:e.dash?"#8290a6":"#56b6ff","stroke-width":1.6,"stroke-opacity":.5,"marker-end":"url(#exa)","stroke-dasharray":e.dash?"6 5":"none"}));
+      if(e.lbl){const t=El("text",{class:"bc-lbl",x:mx,y:(a.y+b.y)/2-6});t.textContent=e.lbl;svg.appendChild(t);}
+    });
+    N.forEach(n=>{
+      const g=El("g",{class:"bc-node","data-exn":n.id,tabindex:"0"});
+      g.appendChild(El("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:10,fill:n.c+"1c",stroke:n.c,"stroke-width":1.4}));
+      const t1=El("text",{class:"bc-t",x:n.x+n.w/2,y:n.y+24,"font-size":"10.5"});t1.textContent=n.t;g.appendChild(t1);
+      const t2=El("text",{class:"bc-s",x:n.x+n.w/2,y:n.y+40});t2.textContent=n.s;g.appendChild(t2);
+      svg.appendChild(g);
+    });
+  }
+  function ins(html){const el=document.getElementById("exins");el.innerHTML='<div class="h">확산 인스펙터</div>'+html;}
+  function clear(){document.querySelectorAll('#exsvg .bc-node.sel,#exchips .bcchip.sel').forEach(e=>e.classList.remove("sel"));}
+  function init(){
+    if(!document.getElementById("exsvg"))return;
+    build();
+    document.getElementById("exchips").innerHTML=CH.map((c,i)=>`<div class="bcchip" data-exc="${i}" tabindex="0"><div class="t">${c.t}</div><div class="m">${c.m}</div></div>`).join("");
+    document.getElementById("exsvg").addEventListener("click",e=>{const n=e.target.closest(".bc-node");if(!n)return;clear();n.classList.add("sel");ins(ND[n.dataset.exn]||"");});
+    document.getElementById("exchips").addEventListener("click",e=>{const c=e.target.closest(".bcchip");if(!c)return;clear();c.classList.add("sel");ins(CH[+c.dataset.exc].d);});
+  }
+  init();
+})();
 /* ===== 퀵 내비 ===== */
 (function(){
   const nav=document.createElement("nav");nav.id="qnav";
