@@ -280,6 +280,21 @@
   #aicon button.run{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--c2);color:var(--c2);border-radius:9px;padding:8px 16px;cursor:pointer}
   #aicon button.run:hover{background:var(--c2);color:#08131f}
   @media(max-width:640px){#aicon .chartbox{height:200px}}
+  /* ===== 퀵 내비게이션 (항상 표시) ===== */
+  #qnav{position:fixed;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;z-index:90}
+  #qnav .qn{font-family:var(--mono);font-size:10px;width:34px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:7px;background:rgba(14,19,28,.88);color:var(--muted);cursor:pointer;backdrop-filter:blur(4px);position:relative}
+  #qnav .qn:hover{border-color:var(--c2);color:var(--ink)}
+  #qnav .qn.on{border-color:var(--qc,var(--c2));color:var(--qc,var(--c2));background:var(--surface2)}
+  #qnav .qn::after{content:attr(data-t);position:absolute;right:40px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:10px;color:var(--ink);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;opacity:0;pointer-events:none;transition:opacity .15s}
+  #qnav .qn:hover::after{opacity:1}
+  #qnav .qtop{margin-top:4px;color:var(--faint)}
+  @media(max-width:900px){
+    #qnav{right:0;left:0;top:auto;bottom:0;transform:none;flex-direction:row;justify-content:center;gap:4px;padding:7px 8px;background:rgba(10,13,19,.94);border-top:1px solid var(--border);overflow-x:auto}
+    #qnav .qn{flex-shrink:0}
+    #qnav .qn::after{display:none}
+    body{padding-bottom:46px}
+  }
+
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
   :focus-visible{outline:2px solid var(--c2);outline-offset:3px;border-radius:6px}
@@ -1136,7 +1151,22 @@ u1run();u2init();u6init();u3init();u4init();u5init();
 
 })();
 
-addEventListener("scroll",()=>{const h=document.documentElement;document.getElementById("rail").style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";},{passive:true});
+/* ===== 퀵 내비 ===== */
+(function(){
+  const nav=document.createElement("nav");nav.id="qnav";
+  nav.innerHTML=SECS.map(s=>`<div class="qn" data-sec="${s.id}" data-t="${s.n} · ${s.kicker}" style="--qc:${s.ac}">${s.n}</div>`).join("")
+    +`<div class="qn qtop" data-top="1" data-t="맨 위 · 목차">▲</div>`;
+  document.body.appendChild(nav);
+  nav.addEventListener("click",e=>{const q=e.target.closest(".qn");if(!q)return;
+    if(q.dataset.top){window.scrollTo({top:0,behavior:"smooth"});return;}
+    document.getElementById(q.dataset.sec)?.scrollIntoView({behavior:"smooth",block:"start"});});
+  window.__qnavSync=function(){
+    const y=window.scrollY+140;let cur=null;
+    SECS.forEach(s=>{const el=document.getElementById(s.id);if(el&&el.offsetTop<=y)cur=s.id;});
+    nav.querySelectorAll(".qn[data-sec]").forEach(q=>q.classList.toggle("on",q.dataset.sec===cur));
+  };
+})();
+addEventListener("scroll",()=>{const h=document.documentElement;document.getElementById("rail").style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+"%";window.__qnavSync&&window.__qnavSync();},{passive:true});
 </script>
 </body>
 </html>
